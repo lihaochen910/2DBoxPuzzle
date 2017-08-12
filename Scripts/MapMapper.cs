@@ -43,6 +43,18 @@ public sealed class MapMapper : MonoBehaviour
 
         return map;
     }
+    /* 获取地图原数组 */
+    public Box[,] GetMap()
+    {
+        return Map;
+    }
+    /* 指定位置是否存在Box */
+    public bool IsExist(Vector2 position)
+    {
+        if (this[position.x, position.y])
+            return true;
+        else return false;
+    }
     /* 索引是否在地图范围中 */
     public bool InRange(Vector2 position)
     {
@@ -71,6 +83,7 @@ public sealed class MapMapper : MonoBehaviour
         if (InRange(destination))
         {
             var index = GetBoxIndex(box);
+            print("destination:" + destination);
             Map[(int)destination.x, (int)destination.y] = box;
             Map[(int)index.x, (int)index.y] = null;
         }
@@ -106,7 +119,7 @@ public sealed class MapMapper : MonoBehaviour
             for (int j = 0; j < Map.GetLength(1); j++)
             {
                 Gizmos.color = Color.green;
-                Gizmos.DrawWireCube(new Vector3(i,j,0), Vector3.one);
+                Gizmos.DrawWireCube(new Vector3(i, j, 0), Vector3.one);
             }
         }
     }
