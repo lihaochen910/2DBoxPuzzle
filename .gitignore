@@ -16,3 +16,4 @@ TEST-*.xml
 junit*.properties
 
 *.meta
+\.DS_Store
