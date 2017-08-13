@@ -8,13 +8,13 @@ public class Box : MonoBehaviour
 {
     /***
      * Box:
-     *  (1)抛出消息/收到消息后处理什么
+     *  (1)Box下落坐标计算问题,遍历所有合适坐标,
+     *      如果比前一个Isolated状态的box y轴坐标高,则不使用前一坐标计算
      *  (2)Box状态切换/检查
-     *  (3)如何同步下落
      */
     #region Private variables
     private MapMapper _map;
-    private readonly Vector2 _nilPosition = new Vector2(-1, -1);
+    private readonly Vector2 _nilPosition = new Vector2(float.MinValue, float.MinValue);
     //记录被推动后的坐标,用于被推动的源物体
     private Vector2 _moveEndPosition;
     #endregion
@@ -46,8 +46,8 @@ public class Box : MonoBehaviour
 
     public enum BoxState
     {
-        Linked,
-        Isolated,
+        Linked,//连接状态
+        Isolated,//孤立状态
     }
 
     #region MonoBehaviour
@@ -58,7 +58,7 @@ public class Box : MonoBehaviour
     }
     #endregion
 
-    #region TempCode
+    #region AlphaCode
     //被推动动画结束后执行回调
     public void OnMoveEnd(Vector2 moveEndPosition)
     {
@@ -152,36 +152,16 @@ public class Box : MonoBehaviour
     private Vector2 calcDropPosition()
     {
         var currentPositionInArray = new Vector2(transform.position.x, transform.position.y);
-        //_map.GetBoxIndex(this);
+
         var currentX = (int)currentPositionInArray.x;
         var currentY = (int)currentPositionInArray.y;
-        //当前box实例在地图边界
-        //if (currentY - 1 < 0)
-        //    return new Vector2(currentX, -99);
 
         var hitX = new int[] { currentX - 1,currentX, currentX + 1};
         //从当前行倒序遍历地图数组(世界方向向下)
-        //for (int y = currentY - 1; y >= 0; y--)
-        //{
-        //    for (int x = 0; x < _map.GetMap().GetLength(0); x++)
-        //    {
-        //        if (IntArrayContainElement(hitX, x))
-        //        {
-        //            if (_map[x, y])
-        //            {
-        //                if (_map[x, y].State == BoxState.Isolated)
-        //                {
-        //                    return new Vector2(currentX, _map[x, y]._linkedPosition.y + 1);
-        //                }
-        //                else
-        //                {
-        //                    return new Vector2(currentX, y + 1);
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
-        /* TODO: 解决源物体以外下落坐标不正确的问题 */
+        
+        /* Beta: 待解决某些情况源物体以外下落坐标不正确的问题 */
+        //使用List收集所有的停靠点,取y值最大的坐标点即为最终的停靠点
+        List<Vector2> dropPositionList = new List<Vector2>();
         foreach (var box in _map.GetMap().Reverse())
         {
             //print(gameObject.name + " check " + box.Key + " " + box.Value.gameObject.name);
@@ -191,17 +171,27 @@ public class Box : MonoBehaviour
                 if (box.Value.State == BoxState.Isolated)
                 {
                     //Debug.LogWarning(gameObject.name + " use " + box.Value.gameObject.name + " _linkedPosition.y:" + box.Value._linkedPosition.y);
-                    return new Vector2(currentX, box.Value._linkedPosition.y + 1);
+                    //return new Vector2(currentX, box.Value._linkedPosition.y + 1);
+                    dropPositionList.Add(new Vector2(currentX, box.Value._linkedPosition.y + 1));
                 }
                 else
                 {
                     //Debug.LogWarning(gameObject.name + " use " + box.Value.gameObject.name + " .y:" + box.Key.y);
-                    return new Vector2(currentX, box.Key.y + 1);
+                    //return new Vector2(currentX, box.Key.y + 1);
+                    dropPositionList.Add(new Vector2(currentX, box.Key.y + 1));
                 }
             }
         }
+        /* 查找最上方的停靠点 */
+        if (dropPositionList.Count != 0)
+        {
+            return (from pos in dropPositionList
+                orderby pos.y descending
+                select pos).ToArray()[0];
+        }
+        Debug.LogWarning("dropPosition not found");
         //如果没有找到停靠点，则返回地图外最下方的坐标
-        return new Vector2(currentX, -99);
+        return _nilPosition;
     }
     /* 工具方法,检查静态int数组中是否包括指定int元素 */
     private bool IntArrayContainElement(int[] array, int v)
