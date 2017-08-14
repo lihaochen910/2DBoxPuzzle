@@ -131,30 +131,33 @@ public sealed class MapMapper : MonoBehaviour
         SortMap();
     }
 
-    #region DrawOnSceneView
+    #region DrawDebugView
     void OnDrawGizmos()
     {
-        //DrawMapRange();
-        //DrawBox();
+        DrawBoxPrePosition();
+        DrawBoxRealPosition();
     }
-    void DrawMapRange()
+    /* 绘制Box下落时预计算的停靠点坐标 */
+    void DrawBoxPrePosition()
     {
-        //if (Map == null)
-        //    return;
-        //for (int i = 0; i < Map.GetLength(0); i++)
-        //{
-        //    for (int j = 0; j < Map.GetLength(1); j++)
-        //    {
-        //        if (Map[i, j] == null)
-        //        {
-        //            //Gizmos.color = Color.red;
-        //            //Gizmos.DrawWireCube(new Vector3(i, j, 0), Vector3.one);
-        //            continue;
-        //        }
-        //        Gizmos.color = Color.green;
-        //        Gizmos.DrawWireCube(new Vector3(i, j, 0), Vector3.one);
-        //    }
-        //}
+        if (Map == null)
+            return;
+        foreach (var box in Map)
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireCube(new Vector3(box.Key.x, box.Key.y, 0), Vector3.one);
+        }
+    }
+    /* 绘制Box实际坐标 */
+    void DrawBoxRealPosition()
+    {
+        if (Map == null)
+            return;
+        foreach (var box in Map)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireCube(new Vector3(box.Value.transform.position.x, box.Value.transform.position.y, 0), Vector3.one);
+        }
     }
     #endregion
 }
