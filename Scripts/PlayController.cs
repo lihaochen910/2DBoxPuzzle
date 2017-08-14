@@ -29,8 +29,8 @@ public class PlayController : MonoBehaviour {
                     var targetPosition = new Vector2(org.x + pos,org.y);
                     if (!MapMapper.ins.IsExist(targetPosition))
                     {
-                        MapMapper.ins.MoveTo(box, targetPosition);
-                        iTween.MoveTo(hit.transform.gameObject, iTween.Hash("x", hit.transform.position.x + pos, "easeType", "easeInOutExpo", "time", 0.5f, "oncomplete", "OnMoveEnd", "oncompletetarget", hit.transform.gameObject));
+                        //MapMapper.ins.MoveTo(box, targetPosition);
+                        iTween.MoveTo(hit.transform.gameObject, iTween.Hash("x", hit.transform.position.x + pos, "easeType", "easeInOutExpo", "time", 0.5f, "oncomplete", "OnMoveEnd", "oncompletetarget", hit.transform.gameObject, "oncompleteparams",targetPosition));
                     }
                 }
             }
