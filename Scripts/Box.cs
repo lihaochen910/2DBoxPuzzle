@@ -10,7 +10,7 @@ public class Box : MonoBehaviour
      * Box:
      *  (1)Box下落坐标计算问题,遍历所有合适坐标,
      *      如果比前一个Isolated状态的box y轴坐标高,则不使用前一坐标计算
-     *  (2)Box状态切换/检查
+     *  (2)FixMe:下落时没有及时更新坐标导致字典已存在键值报错无法插入
      */
     #region Private variables
     private MapMapper _map;
@@ -205,7 +205,16 @@ public class Box : MonoBehaviour
     private void pushDropEvent()
     {
         while (To_be_synchronized_object.Count != 0)
-            To_be_synchronized_object.Dequeue().DoDropTween();
+        {
+            var box = To_be_synchronized_object.Dequeue();
+            box.DoMoveToInArray(box._linkedPosition);
+            box.DoDropTween();
+        }
+    }
+    /* 下落动画完成后切换box状态 */
+    private void SwitchState()
+    {
+        State = BoxState.Linked;
     }
     /* 执行下落动画 */
     private void DoDropTween()
@@ -213,14 +222,9 @@ public class Box : MonoBehaviour
         //print(gameObject.name+" DoDropTween 2pos:"+_linkedPosition);
         iTween.MoveTo(gameObject, 
             iTween.Hash("position", new Vector3(_linkedPosition.x, _linkedPosition.y,gameObject.transform.position.z), "easeType", "linear",
-            "speed", DropSpeed, "oncomplete", "DoMoveToInArray_And_SwitchState", "oncompleteparams", _linkedPosition));
+            "speed", DropSpeed, "oncomplete", "SwitchState"));
     }
-    /* 下落动画完成后移动box在数组中的位置 */
-    private void DoMoveToInArray_And_SwitchState(Vector2 position)
-    {
-        _map.MoveTo(this, position);
-        State = BoxState.Linked;
-    }
+    /* 在地图类中改变此实例的位置 */
     private void DoMoveToInArray(Vector2 position)
     {
         _map.MoveTo(this, position);
